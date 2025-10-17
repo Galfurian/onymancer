@@ -1,7 +1,3 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "onymancer"
 version = "0.1.0"
@@ -37,7 +33,6 @@ dev = [
     "mypy>=0.950",
     "ruff>=0.14.0",
 ]
-docs = ["sphinx>=4.0.0", "sphinx-rtd-theme>=1.0.0"]
 
 [project.urls]
 Homepage = "https://github.com/Galfurian/onymancer"
@@ -45,8 +40,9 @@ Repository = "https://github.com/Galfurian/onymancer"
 Issues = "https://github.com/Galfurian/onymancer/issues"
 Changelog = "https://github.com/Galfurian/onymancer/blob/main/CHANGELOG.md"
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/onymancer"]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.black]
 line-length = 88

@@ -119,22 +119,22 @@ Load token definitions from a JSON file.
 
 - `bool`: True if loading was successful
 
-### set_token(key: str, tokens: list[str]) -> None
+### `set_token(key: str, tokens: list[str]) -> None`
 
 Set the token list for a given key.
 
 **Parameters:**
 
-- `key` (str): Single character token key
-- `tokens` (list[str]): List of possible replacements
+- `key (str)`: Single character token key
+- `tokens (list[str])`: List of possible replacements
 
-### set_tokens(tokens: dict[str, list[str]]) -> None
+### `set_tokens(tokens: dict[str, list[str]]) -> None`
 
 Set multiple token lists at once.
 
 **Parameters:**
 
-- `tokens` (dict[str, list[str]]): Dictionary mapping keys to token lists
+- `tokens (dict[str, list[str]])`: Dictionary mapping keys to token lists
 
 ## Usage Examples
 
