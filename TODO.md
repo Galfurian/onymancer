@@ -6,17 +6,17 @@ This document outlines planned improvements to make the onymancer fantasy name g
 
 ### 1.1 Cultural Token Sets
 
-- [ ] Create Elvish token set (liquid consonants l/r, soft vowels, melodic patterns)
-- [ ] Create Dwarvish token set (hard consonants k/g/d, short vowels, compound structures)
+- [x] Create Elvish token set (liquid consonants l/r, soft vowels, melodic patterns)
+- [x] Create Dwarvish token set (hard consonants k/g/d, short vowels, compound structures)
 - [ ] Create Orcish token set (gutturals kh/gr, harsh sounds, simple syllables)
 - [ ] Create Draconic token set (sibilants s/z/sh, rolling r's, complex clusters)
-- [ ] Add language selection parameter to `generate()` function
+- [x] Add language selection parameter to `generate()` function
 
 ### 1.2 Batch Generation with Constraints
 
-- [ ] Implement `generate_batch()` function with count parameter
-- [ ] Add length constraints (min_length, max_length)
-- [ ] Add character restrictions (starts_with, ends_with, contains)
+- [x] Implement `generate_batch()` function with count parameter
+- [x] Add length constraints (min_length, max_length)
+- [x] Add character restrictions (starts_with, ends_with, contains)
 - [ ] Add pattern avoidance (avoid consecutive consonants, etc.)
 - [ ] Add uniqueness guarantee within batch
 
