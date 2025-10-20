@@ -10,6 +10,8 @@ from onymancer import (
     load_language_from_json,
     set_token,
     set_tokens,
+    score_pronounceability,
+    is_pronounceable,
 )
 
 
@@ -257,3 +259,48 @@ def test_load_language_from_json_invalid() -> None:
     """Test loading invalid JSON for language."""
     result = load_language_from_json("test", "nonexistent.json")
     assert result is False
+
+
+def test_score_pronounceability() -> None:
+    """Test pronounceability scoring."""
+    # Highly pronounceable names
+    assert score_pronounceability("Eldrin") > 0.6
+    assert score_pronounceability("Thalia") > 0.7
+    assert score_pronounceability("Borogar") > 0.6
+
+    # Moderately pronounceable names
+    assert 0.3 < score_pronounceability("Quartz") < 0.8
+    assert 0.3 < score_pronounceability("Zephyr") < 0.8
+
+    # Low pronounceability names
+    assert score_pronounceability("Brrrgh") < 0.5
+    assert score_pronounceability("Xxxzzz") < 0.5
+    assert score_pronounceability("Xyzzyx") < 0.2
+    assert score_pronounceability("") == 0.0
+    assert score_pronounceability("a") == 0.0
+
+
+def test_is_pronounceable() -> None:
+    """Test pronounceability threshold checking."""
+    assert is_pronounceable("Eldrin")  # Default threshold 0.6
+    assert is_pronounceable("Thalia", threshold=0.8)  # High threshold
+    assert not is_pronounceable("Xxxzzz")  # Low score
+    assert not is_pronounceable("Xxxzzz", threshold=0.1)  # Low threshold
+
+
+def test_generate_batch_with_pronounceability() -> None:
+    """Test batch generation with pronounceability filtering."""
+    # Generate names with high pronounceability requirement
+    names = generate_batch("!svs", count=5, seed=42, min_pronounceability=0.7)
+    assert len(names) == 5
+
+    # All names should meet the threshold
+    for name in names:
+        assert score_pronounceability(name) >= 0.7
+
+    # Test with very high threshold (might not find enough names)
+    names_strict = generate_batch("!svs", count=10, seed=42, min_pronounceability=0.95)
+    # May return fewer than requested if constraints are too strict
+    assert len(names_strict) <= 10
+    for name in names_strict:
+        assert score_pronounceability(name) >= 0.95

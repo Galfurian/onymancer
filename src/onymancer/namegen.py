@@ -5,6 +5,8 @@ import random
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .pronounceability import score_pronounceability
+
 # Global token map
 _token_map: dict[str, list[str]] = {}
 
@@ -283,6 +285,7 @@ def generate_batch(
     starts_with: str | None = None,
     ends_with: str | None = None,
     contains: str | None = None,
+    min_pronounceability: float | None = None,
 ) -> list[str]:
     """
     Generate multiple names using the given pattern.
@@ -307,6 +310,9 @@ def generate_batch(
             String that generated names must end with. If None, no restriction.
         contains:
             String that generated names must contain. If None, no restriction.
+        min_pronounceability:
+            Minimum pronounceability score (0.0-1.0) for generated names.
+            If None, no pronounceability filtering is applied.
 
     Returns:
         list[str]:
@@ -345,6 +351,11 @@ def generate_batch(
             meets_constraints = False
         if meets_constraints and contains is not None and contains not in name:
             meets_constraints = False
+        
+        # Pronounceability constraint
+        if meets_constraints and min_pronounceability is not None:
+            if score_pronounceability(name) < min_pronounceability:
+                meets_constraints = False
         
         if meets_constraints:
             names.append(name)

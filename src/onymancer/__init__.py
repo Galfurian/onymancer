@@ -7,6 +7,10 @@ from .namegen import (
     set_token,
     set_tokens,
 )
+from .pronounceability import (
+    score_pronounceability,
+    is_pronounceable,
+)
 
 __all__ = [
     "generate",
@@ -14,4 +18,6 @@ __all__ = [
     "load_language_from_json",
     "set_token",
     "set_tokens",
+    "score_pronounceability",
+    "is_pronounceable",
 ]

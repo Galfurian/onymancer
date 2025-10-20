@@ -201,6 +201,11 @@ Pattern Syntax:
         "--contains",
         help="String that generated names must contain",
     )
+    parser.add_argument(
+        "--min-pronounceability",
+        type=float,
+        help="Minimum pronounceability score (0.0-1.0) for generated names",
+    )
 
     args = parser.parse_args()
 
@@ -246,6 +251,7 @@ Pattern Syntax:
             args.starts_with,
             args.ends_with,
             args.contains,
+            args.min_pronounceability,
         )
 
         print(
