@@ -44,10 +44,16 @@ PREDEFINED_PATTERNS = {
         "example": "Lirael",
     },
     "dwarven": {
-        "patterns": ["!s!c!c<v|>"],
-        "language": "default",
-        "description": "Dwarven name with hard consonants",
-        "example": "Thrain",
+        "patterns": [
+            "!svs",  # Two syllables with connecting vowel
+            "!svc",  # Syllable + vowel + hard consonant
+            "!svrs",  # Syllable + vowel + r + syllable
+            "!svgs",  # Syllable + vowel + g + syllable
+            "!svks",  # Syllable + vowel + k + syllable
+        ],
+        "language": "dwarvish",
+        "description": "Dwarven-style name with hard consonants and guttural sounds",
+        "example": "Thorin",
     },
     "title": {
         "patterns": ["!t !T"],
@@ -170,7 +176,7 @@ Pattern Syntax:
     parser.add_argument(
         "--language",
         default="default",
-        choices=["default", "elvish"],
+        choices=["default", "elvish", "dwarvish"],
         help="Language token set to use (default: auto for presets, 'default' for custom patterns)",
     )
     parser.add_argument(
@@ -208,7 +214,7 @@ Pattern Syntax:
         print_patterns()
         return
 
-    if args.language not in ["default", "elvish"]:
+    if args.language not in ["default", "elvish", "dwarvish"]:
         print(f"✗ Unknown language: {args.language}")
         sys.exit(1)
 
