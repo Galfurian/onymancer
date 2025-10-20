@@ -13,49 +13,62 @@ from onymancer import generate_batch, load_language_from_json
 # Predefined patterns with descriptions
 PREDEFINED_PATTERNS = {
     "simple": {
-        "pattern": "s(dim)",
+        "patterns": ["s(dim)"],
         "language": "default",
         "description": "Simple name with literal suffix",
         "example": "thor(dim)",
     },
     "fantasy": {
-        "pattern": "!s!v!c",
+        "patterns": ["!s!v!c"],
         "language": "default",
         "description": "Classic fantasy name with capitalization",
         "example": "Elira",
     },
     "elven": {
-        "pattern": "!s<v|l>!c!v",
+        "patterns": [
+            "!svs",  # Capitalized first syllable + vowel + syllable
+            "!svlvs",  # With liquid consonant in middle
+            "!svrvs",  # With r sound in middle
+            "!svsv",  # Three syllables with final vowel
+            "!sv(th)s",  # With 'th' sound using literal group
+            "!svlv",  # Shorter name with liquid, ending with vowel
+            "!svrv",  # Shorter name with r, ending with vowel
+            "!sv(th)v",  # With 'th' sound, ending with vowel
+            "!svl(th)s",  # Liquid + 'th' combination
+            "!svr(th)s",  # R + 'th' combination
+            "!svnv",  # With nasal 'n' sound
+            "!svmv",  # With 'm' sound
+        ],
         "language": "elvish",
-        "description": "Elven-style name with liquid consonants",
+        "description": "Elven-style name with melodic syllables and flowing vowels",
         "example": "Lirael",
     },
     "dwarven": {
-        "pattern": "!s!c!c<v|>",
+        "patterns": ["!s!c!c<v|>"],
         "language": "default",
         "description": "Dwarven name with hard consonants",
         "example": "Thrain",
     },
     "title": {
-        "pattern": "!t !T",
+        "patterns": ["!t !T"],
         "language": "default",
         "description": "Random title",
         "example": "Master of The Mountains",
     },
     "place": {
-        "pattern": "!s<v|c><ford|ham|ton|ville|burg>",
+        "patterns": ["!s<v|c><ford|ham|ton|ville|burg>"],
         "language": "default",
         "description": "Place name",
         "example": "Riverton",
     },
     "insult": {
-        "pattern": "!i !s",
+        "patterns": ["!i !s"],
         "language": "default",
         "description": "Humorous insult",
         "example": "Bigheaded Thor",
     },
     "mushy": {
-        "pattern": "!m !M",
+        "patterns": ["!m !M"],
         "language": "default",
         "description": "Affectionate term",
         "example": "Sweetie Pie",
@@ -210,7 +223,9 @@ Pattern Syntax:
         sys.exit(1)
 
     if args.preset:
-        args.pattern = PREDEFINED_PATTERNS[args.preset]["pattern"]
+        import random
+
+        args.pattern = random.choice(PREDEFINED_PATTERNS[args.preset]["patterns"])
         args.language = PREDEFINED_PATTERNS[args.preset]["language"]
 
     # Generate names
