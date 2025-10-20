@@ -335,29 +335,35 @@ def generate_batch(
     while len(names) < count and attempts < max_attempts:
         # We already seeded the random generator above.
         name = generate(pattern, None, language)
-        # Check all constraints
+        
+        # Check constraints with fail-early pattern
         name_len = len(name)
-        meets_constraints = True
         
         # Length constraints
-        if (min_length is not None and name_len < min_length) or \
-           (max_length is not None and name_len > max_length):
-            meets_constraints = False
+        min_violated = min_length is not None and name_len < min_length
+        max_violated = max_length is not None and name_len > max_length
+        if min_violated or max_violated:
+            attempts += 1
+            continue
         
         # Character constraints
-        if meets_constraints and starts_with is not None and not name.startswith(starts_with):
-            meets_constraints = False
-        if meets_constraints and ends_with is not None and not name.endswith(ends_with):
-            meets_constraints = False
-        if meets_constraints and contains is not None and contains not in name:
-            meets_constraints = False
+        if starts_with is not None and not name.startswith(starts_with):
+            attempts += 1
+            continue
+        if ends_with is not None and not name.endswith(ends_with):
+            attempts += 1
+            continue
+        if contains is not None and contains not in name:
+            attempts += 1
+            continue
         
         # Pronounceability constraint
-        if meets_constraints and min_pronounceability is not None:
-            if score_pronounceability(name) < min_pronounceability:
-                meets_constraints = False
+        if min_pronounceability is not None and \
+           score_pronounceability(name) < min_pronounceability:
+            attempts += 1
+            continue
         
-        if meets_constraints:
-            names.append(name)
+        # All constraints passed
+        names.append(name)
         attempts += 1
     return names
