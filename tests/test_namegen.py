@@ -1,7 +1,7 @@
 """Tests for name generator."""
 
 
-from onymancer import generate, load_tokens_from_json, set_token, set_tokens
+from onymancer import generate, generate_batch, load_tokens_from_json, set_token, set_tokens
 
 
 def test_generate_simple() -> None:
@@ -71,3 +71,34 @@ def test_generate_complex_pattern() -> None:
     name = generate(pattern, seed=456)
     assert isinstance(name, str)
     assert len(name) > 0
+
+
+def test_generate_batch_basic() -> None:
+    """Test basic batch generation."""
+    names = generate_batch("s", count=3, seed=42)
+    assert isinstance(names, list)
+    assert len(names) == 3
+    for name in names:
+        assert isinstance(name, str)
+        assert len(name) > 0
+
+
+def test_generate_batch_reproducibility() -> None:
+    """Test batch generation reproducibility with seed."""
+    names1 = generate_batch("s!v", count=5, seed=123)
+    names2 = generate_batch("s!v", count=5, seed=123)
+    assert names1 == names2
+
+
+def test_generate_batch_no_seed() -> None:
+    """Test batch generation without seed."""
+    names = generate_batch("s", count=2)
+    assert len(names) == 2
+    for name in names:
+        assert isinstance(name, str)
+
+
+def test_generate_batch_count_zero() -> None:
+    """Test batch generation with count 0."""
+    names = generate_batch("s", count=0, seed=42)
+    assert names == []

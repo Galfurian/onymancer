@@ -1,5 +1,6 @@
 """Fantasy name generator module."""
 
+from dataclasses import dataclass, field
 import json
 import random
 
@@ -427,118 +428,115 @@ _default_tokens = {
 _token_map.update(_default_tokens)
 
 
-def get_tokens(key: str) -> list[str]:
-    """Retrieve the tokens corresponding to a key.
+@dataclass
+class _OptionT:
+    """
+    Struct that encapsulates all the state options.
+
+    Attributes:
+        capitalize (bool):
+            Whether to capitalize the next character.
+        emit_literal (bool):
+            Whether to emit characters as literals.
+        inside_group (bool):
+            Whether currently inside a group.
+        seed (int):
+            The current seed for random generation.
+        current_option (str):
+            The current option being built.
+        options (list[str]):
+            The list of options in the current group.
+    """
+
+    capitalize: bool = field(
+        default=False,
+        metadata={"description": "Whether to capitalize the next character."},
+    )
+    emit_literal: bool = field(
+        default=False,
+        metadata={"description": "Whether to emit characters as literals."},
+    )
+    inside_group: bool = field(
+        default=False, metadata={"description": "Whether currently inside a group."}
+    )
+    current_option: str = field(
+        default="", metadata={"description": "The current option being built."}
+    )
+    options: list[str] = field(
+        default_factory=list,
+        metadata={"description": "The list of options in the current group."},
+    )
+
+
+def _capitalize_and_clear(options: _OptionT, character: str) -> str:
+    """
+    Capitalize the given character if capitalize is True.
 
     Args:
-        key: The key to retrieve the tokens for.
+        options:
+            The current state options.
+        character:
+            The input character.
 
     Returns:
-        The list of tokens for the specified key.
+        str:
+            The capitalized character if capitalize is True, else the original.
 
     """
-    return _token_map.get(key, [])
-
-
-def _get_rand(seed: int, min_val: int, max_val: int) -> int:
-    """Return a random number between min_val and max_val.
-
-    Args:
-        seed: The seed for the random number generator.
-        min_val: The lower bound.
-        max_val: The upper bound.
-
-    Returns:
-        A random integer between min_val and max_val.
-
-    """
-    random.seed(seed)
-    return random.randint(min_val, max_val)
-
-
-def _pick_random_element(seed: int, strings: list[str]) -> str:
-    """Pick a random element from the given container of strings.
-
-    Args:
-        seed: The seed for random selection.
-        strings: The list of strings to pick from.
-
-    Returns:
-        The randomly selected string.
-
-    """
-    if not strings:
-        return ""
-    index = _get_rand(seed, 0, len(strings) - 1)
-    return strings[index]
-
-
-def _capitalize_and_clear(character: str, capitalize: bool) -> str:
-    """Capitalize the given character if capitalize is True.
-
-    Args:
-        character: The input character.
-        capitalize: Whether to capitalize.
-
-    Returns:
-        The capitalized character if capitalize is True, else the original.
-
-    """
-    if capitalize:
+    if options.capitalize:
+        options.capitalize = False
         return character.upper()
     return character
 
 
-class _OptionT:
-    """Struct that encapsulates all the state options."""
-
-    def __init__(self) -> None:
-        self.capitalize: bool = False
-        self.emit_literal: bool = False
-        self.inside_group: bool = False
-        self.seed: int = 0
-        self.current_option: str = ""
-        self.options: list[str] = []
-
-
 def _process_token(options: _OptionT, buffer: list[str], key: str) -> bool:
-    """Process a token based on the provided key and append it to the buffer.
+    """
+    Process a token based on the provided key and append it to the buffer.
 
     Args:
-        options: The current state options.
-        buffer: The string buffer where the processed token will be appended.
-        key: The key representing the type of token to process.
+        options:
+            The current state options.
+        buffer:
+            The string buffer where the processed token will be appended.
+        key:
+            The key representing the type of token to process.
 
     Returns:
-        True on success, False otherwise.
+        bool:
+            True on success, False otherwise.
 
     """
-    tokens = get_tokens(key)
+    tokens = _token_map.get(key, [])
     if not tokens:
-        buffer.append(_capitalize_and_clear(key, options.capitalize))
+        buffer.append(_capitalize_and_clear(options, key))
     else:
-        token = _pick_random_element(options.seed, tokens)
-        if not token:
-            return False
-        # Update seed for next random call
-        options.seed += 1
+        token = random.choice(tokens)
         it = iter(token)
         first_char = next(it, "")
-        buffer.append(_capitalize_and_clear(first_char, options.capitalize))
+        buffer.append(_capitalize_and_clear(options, first_char))
         buffer.extend(it)
     return True
 
 
-def _process_character(options: _OptionT, buffer: list[str], character: str) -> bool:
-    """Process a character from the pattern and append it to the buffer.
+def _process_character(
+    options: _OptionT,
+    buffer: list[str],
+    character: str,
+) -> bool:
+    """
+    Process a character from the pattern and append it to the buffer.
 
     Args:
-        options: The current state options.
-        buffer: The string buffer where the processed character will be appended.
-        character: The character to process.
+        options:
+            The current state options.
+        buffer:
+            The string buffer where the processed character will be appended.
+        character:
+            The character to process.
 
     Returns:
-        True on success, False otherwise.
+        bool:
+            True on success, False otherwise.
 
     """
     if character == "(":
@@ -566,8 +564,7 @@ def _process_character(options: _OptionT, buffer: list[str], character: str) -> 
         if not options.options:
             return False
         # Randomly pick an option.
-        option = _pick_random_element(options.seed, options.options)
-        options.seed += 1
+        option = random.choice(options.options)
         # Process and append the selected option.
         for token in option:
             if not _process_character(options, buffer, token):
@@ -582,20 +579,23 @@ def _process_character(options: _OptionT, buffer: list[str], character: str) -> 
     elif options.inside_group:
         options.current_option += character
     elif options.emit_literal:
-        buffer.append(_capitalize_and_clear(character, options.capitalize))
+        buffer.append(_capitalize_and_clear(options, character))
     elif not _process_token(options, buffer, character):
         return False
     return True
 
 
 def load_tokens_from_json(filename: str) -> bool:
-    """Load tokens from a JSON file.
+    """
+    Load tokens from a JSON file.
 
     Args:
-        filename: The path to the JSON file containing the tokens.
+        filename:
+            The path to the JSON file containing the tokens.
 
     Returns:
-        True if the loading was successful, False otherwise.
+        bool:
+            True if the loading was successful, False otherwise.
 
     """
     try:
@@ -612,41 +612,88 @@ def load_tokens_from_json(filename: str) -> bool:
 
 
 def set_token(key: str, tokens: list[str]) -> None:
-    """Set the token list of a given key in the global token map.
+    """
+    Set the token list of a given key in the global token map.
 
     Args:
-        key: The key for which to set the token list.
-        tokens: The list of tokens (strings) to associate with the key.
+        key:
+            The key for which to set the token list.
+        tokens:
+            The list of tokens (strings) to associate with the key.
 
     """
     _token_map[key] = tokens
 
 
 def set_tokens(tokens: dict[str, list[str]]) -> None:
-    """Set a given list of key-value pairs in the global token map.
+    """
+    Set a given list of key-value pairs in the global token map.
 
     Args:
-        tokens: A map where each key is a character and the value is a list of strings (tokens).
+        tokens:
+            A map where each key is a character and the value is a list of
+            strings (tokens).
 
     """
     _token_map.update(tokens)
 
 
-def generate(pattern: str, seed: int) -> str:
-    """Generate a random name based on the provided pattern and seed.
+def generate(
+    pattern: str,
+    seed: int | None = None,
+) -> str:
+    """
+    Generate a random name based on the provided pattern and seed.
 
     Args:
-        pattern: The pattern defining the structure of the name.
-        seed: The seed for random number generation.
+        pattern (str):
+            The pattern defining the structure of the name.
+        seed (int | None):
+            The seed for random number generation.
 
     Returns:
-        The generated name.
+        str:
+            The generated name.
 
     """
+    # If a seed is provided, seed the random generator.
+    if seed is not None:
+        random.seed(seed)
     options = _OptionT()
-    options.seed = seed
     buffer: list[str] = []
     for c in pattern:
         if not _process_character(options, buffer, c):
             return ""
     return "".join(buffer)
+
+
+def generate_batch(
+    pattern: str,
+    count: int,
+    seed: int | None = None,
+) -> list[str]:
+    """
+    Generate multiple names using the given pattern.
+
+    Args:
+        pattern:
+            The pattern to use for generation.
+        count:
+            Number of names to generate.
+        seed:
+            Optional seed for reproducibility. If provided, each name uses seed
+            + i.
+
+    Returns:
+        list[str]:
+            List of generated names.
+
+    """
+    # If a seed is provided, seed the random generator.
+    if seed is not None:
+        random.seed(seed)
+    names = []
+    for _ in range(count):
+        # We already seeded the random generator above.
+        names.append(generate(pattern, None))
+    return names
