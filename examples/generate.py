@@ -8,11 +8,8 @@ Use --help to see all available options.
 import argparse
 import json
 import sys
-from pathlib import Path
-from typing import Any
 
-from onymancer import generate, load_tokens_from_json, set_tokens
-
+from onymancer import generate, load_tokens_from_json
 
 # Predefined patterns with descriptions
 PREDEFINED_PATTERNS = {
@@ -67,6 +64,7 @@ def load_custom_tokens(filepath: str) -> bool:
 
     Returns:
         True if loaded successfully, False otherwise
+
     """
     try:
         success = load_tokens_from_json(filepath)
@@ -90,6 +88,7 @@ def generate_names(pattern: str, count: int, seed: int | None = None) -> list[st
 
     Returns:
         List of generated names
+
     """
     names = []
     for i in range(count):
