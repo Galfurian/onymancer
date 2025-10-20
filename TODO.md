@@ -22,7 +22,7 @@ This document outlines planned improvements to make the onymancer fantasy name g
 
 ### 1.3 Quality Control & Filtering
 
-- [ ] Implement pronounceability scoring algorithm
+- [x] Implement pronounceability scoring algorithm
 - [ ] Add profanity filtering system
 - [ ] Create name validation functions (length, character sets, patterns)
 - [ ] Add quality metrics (memorability, readability scores)
