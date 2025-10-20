@@ -3,429 +3,23 @@
 from dataclasses import dataclass, field
 import json
 import random
+from pathlib import Path
 
 # Global token map
 _token_map: dict[str, list[str]] = {}
 
+# Data directory
+_data_dir = Path(__file__).parent / "data"
 
-# Default tokens
-_default_tokens = {
-    "s": [
-        "ach",
-        "ack",
-        "ad",
-        "age",
-        "ald",
-        "ale",
-        "an",
-        "ang",
-        "ar",
-        "ard",
-        "as",
-        "ash",
-        "at",
-        "ath",
-        "augh",
-        "aw",
-        "ban",
-        "bel",
-        "bur",
-        "cer",
-        "cha",
-        "che",
-        "dan",
-        "dar",
-        "del",
-        "den",
-        "dra",
-        "dyn",
-        "ech",
-        "eld",
-        "elm",
-        "em",
-        "en",
-        "end",
-        "eng",
-        "enth",
-        "er",
-        "ess",
-        "est",
-        "et",
-        "gar",
-        "gha",
-        "hat",
-        "hin",
-        "hon",
-        "ia",
-        "ight",
-        "ild",
-        "im",
-        "ina",
-        "ine",
-        "ing",
-        "ir",
-        "is",
-        "iss",
-        "it",
-        "kal",
-        "kel",
-        "kim",
-        "kin",
-        "ler",
-        "lor",
-        "lye",
-        "mor",
-        "mos",
-        "nal",
-        "ny",
-        "nys",
-        "old",
-        "om",
-        "on",
-        "or",
-        "orm",
-        "os",
-        "ough",
-        "per",
-        "pol",
-        "qua",
-        "que",
-        "rad",
-        "rak",
-        "ran",
-        "ray",
-        "ril",
-        "ris",
-        "rod",
-        "roth",
-        "ryn",
-        "sam",
-        "say",
-        "ser",
-        "shy",
-        "skel",
-        "sul",
-        "tai",
-        "tan",
-        "tas",
-        "ter",
-        "tim",
-        "tin",
-        "tor",
-        "tur",
-        "um",
-        "und",
-        "unt",
-        "urn",
-        "usk",
-        "ust",
-        "ver",
-        "ves",
-        "vor",
-        "war",
-        "wor",
-        "yer",
-    ],
-    "v": ["a", "e", "i", "o", "u", "y"],
-    "V": [
-        "a",
-        "e",
-        "i",
-        "o",
-        "u",
-        "y",
-        "ae",
-        "ai",
-        "au",
-        "ay",
-        "ea",
-        "ee",
-        "ei",
-        "eu",
-        "ey",
-        "ia",
-        "ie",
-        "oe",
-        "oi",
-        "oo",
-        "ou",
-        "ui",
-    ],
-    "c": [
-        "b",
-        "c",
-        "d",
-        "f",
-        "g",
-        "h",
-        "j",
-        "k",
-        "l",
-        "m",
-        "n",
-        "p",
-        "q",
-        "r",
-        "s",
-        "t",
-        "v",
-        "w",
-        "x",
-        "y",
-        "z",
-    ],
-    "B": [
-        "b",
-        "bl",
-        "br",
-        "c",
-        "ch",
-        "chr",
-        "cl",
-        "cr",
-        "d",
-        "dr",
-        "f",
-        "g",
-        "h",
-        "j",
-        "k",
-        "l",
-        "ll",
-        "m",
-        "n",
-        "p",
-        "ph",
-        "qu",
-        "r",
-        "rh",
-        "s",
-        "sch",
-        "sh",
-        "sl",
-        "sm",
-        "sn",
-        "st",
-        "str",
-        "sw",
-        "t",
-        "th",
-        "thr",
-        "tr",
-        "v",
-        "w",
-        "wh",
-        "y",
-        "z",
-        "zh",
-    ],
-    "C": [
-        "b",
-        "c",
-        "ch",
-        "ck",
-        "d",
-        "f",
-        "g",
-        "gh",
-        "h",
-        "k",
-        "l",
-        "ld",
-        "ll",
-        "lt",
-        "m",
-        "n",
-        "nd",
-        "nn",
-        "nt",
-        "p",
-        "ph",
-        "q",
-        "r",
-        "rd",
-        "rr",
-        "rt",
-        "s",
-        "sh",
-        "ss",
-        "st",
-        "t",
-        "th",
-        "v",
-        "w",
-        "y",
-        "z",
-    ],
-    "i": [
-        "big",
-        "black",
-        "blind",
-        "bloody",
-        "brave",
-        "broken",
-        "cold",
-        "coward",
-        "cowardly",
-        "cunning",
-        "daft",
-        "dead",
-        "deadly",
-        "deaf",
-        "dreadful",
-        "evil",
-        "false",
-        "foul",
-        "frightful",
-        "ghastly",
-        "grim",
-        "grisly",
-        "gullible",
-        "hateful",
-        "hearty",
-        "horrible",
-        "idiotic",
-        "ignorant",
-        "lame",
-        "large",
-        "lazy",
-        "little",
-        "lively",
-        "loathsome",
-        "long",
-        "loud",
-        "mad",
-        "meek",
-        "mighty",
-        "miserable",
-        "moronic",
-        "naughty",
-        "naive",
-        "nimble",
-        "noble",
-        "old",
-        "old",
-        "pale",
-        "petite",
-        "plain",
-        "poor",
-        "quick",
-        "quiet",
-        "rash",
-        "red",
-        "rotten",
-        "rude",
-        "silly",
-        "small",
-        "stupid",
-        "swift",
-        "tall",
-        "tame",
-        "terrible",
-        "thin",
-        "tiny",
-        "tough",
-        "ugly",
-        "vile",
-        "wicked",
-        "wise",
-        "young",
-    ],
-    "m": [
-        "baby",
-        "dear",
-        "darling",
-        "love",
-        "lover",
-        "dearest",
-        "sweet",
-        "sweetie",
-        "sugar",
-    ],
-    "M": ["boo", "kins", "pie", "poo", "tum", "ums"],
-    "D": [
-        "b",
-        "bl",
-        "br",
-        "cl",
-        "d",
-        "f",
-        "fl",
-        "fr",
-        "g",
-        "gh",
-        "gl",
-        "gr",
-        "h",
-        "j",
-        "k",
-        "kl",
-        "m",
-        "n",
-        "p",
-        "th",
-        "w",
-    ],
-    "d": [
-        "el",
-        "al",
-        "an",
-        "ar",
-        "cha",
-        "co",
-        "el",
-        "er",
-        "he",
-        "hi",
-        "is",
-        "or",
-        "son",
-        "ther",
-        "y",
-    ],
-    "t": [
-        "Master of",
-        "Ruler of",
-        "Teacher of",
-        "Conqueror of",
-        "Lord of",
-        "Guardian of",
-        "Keeper of",
-        "Seeker of",
-        "Bringer of",
-        "Bearer of",
-        "Defender of",
-        "Slayer of",
-        "Hunter of",
-        "Watcher of",
-        "Follower of",
-    ],
-    "T": [
-        "the Endless",
-        "the Sea",
-        "the Fiery Pit",
-        "the Mountains",
-        "the Forest",
-        "the Plains",
-        "the Desert",
-        "the Storm",
-        "the Night",
-        "the Day",
-        "the Shadows",
-        "the Light",
-        "the Dark",
-        "the Ancient",
-        "the Forgotten",
-        "the Lost",
-        "the Hidden",
-        "the Eternal",
-        "the Mighty",
-    ],
-}
-
+# Load language token sets from JSON files
+_language_tokens: dict[str, dict[str, list[str]]] = {}
+for lang_file in _data_dir.glob("*.json"):
+    lang = lang_file.stem
+    with open(lang_file, encoding="utf-8") as f:
+        _language_tokens[lang] = json.load(f)
 
 # Initialize with default tokens
-_token_map.update(_default_tokens)
+_token_map.update(_language_tokens["default"])
 
 
 @dataclass
@@ -440,12 +34,12 @@ class _OptionT:
             Whether to emit characters as literals.
         inside_group (bool):
             Whether currently inside a group.
-        seed (int):
-            The current seed for random generation.
         current_option (str):
             The current option being built.
         options (list[str]):
             The list of options in the current group.
+        language (str):
+            The language token set to use.
     """
 
     capitalize: bool = field(
@@ -465,6 +59,10 @@ class _OptionT:
     options: list[str] = field(
         default_factory=list,
         metadata={"description": "The list of options in the current group."},
+    )
+    language: str = field(
+        default="default",
+        metadata={"description": "The language token set to use."},
     )
 
 
@@ -506,7 +104,11 @@ def _process_token(options: _OptionT, buffer: list[str], key: str) -> bool:
             True on success, False otherwise.
 
     """
-    tokens = _token_map.get(key, [])
+    if options.language == "default":
+        tokens = _token_map.get(key, [])
+    else:
+        token_map = _language_tokens.get(options.language, {})
+        tokens = token_map.get(key, [])
     if not tokens:
         buffer.append(_capitalize_and_clear(options, key))
     else:
@@ -585,13 +187,15 @@ def _process_character(
     return True
 
 
-def load_tokens_from_json(filename: str) -> bool:
+def load_language_from_json(language: str, filename: str) -> bool:
     """
-    Load tokens from a JSON file.
+    Load a custom language token set from a JSON file.
 
     Args:
+        language:
+            The name of the language to load.
         filename:
-            The path to the JSON file containing the tokens.
+            The path to the JSON file containing the token set.
 
     Returns:
         bool:
@@ -603,9 +207,7 @@ def load_tokens_from_json(filename: str) -> bool:
             data = json.load(f)
         if not isinstance(data, dict):
             return False
-        global _token_map
-        _token_map.clear()
-        _token_map.update(data)
+        _language_tokens[language] = data
         return True
     except (OSError, json.JSONDecodeError):
         return False
@@ -641,6 +243,7 @@ def set_tokens(tokens: dict[str, list[str]]) -> None:
 def generate(
     pattern: str,
     seed: int | None = None,
+    language: str = "default",
 ) -> str:
     """
     Generate a random name based on the provided pattern and seed.
@@ -650,6 +253,8 @@ def generate(
             The pattern defining the structure of the name.
         seed (int | None):
             The seed for random number generation.
+        language (str):
+            The language token set to use ("default" or "elvish").
 
     Returns:
         str:
@@ -659,7 +264,7 @@ def generate(
     # If a seed is provided, seed the random generator.
     if seed is not None:
         random.seed(seed)
-    options = _OptionT()
+    options = _OptionT(language=language)
     buffer: list[str] = []
     for c in pattern:
         if not _process_character(options, buffer, c):
@@ -671,6 +276,7 @@ def generate_batch(
     pattern: str,
     count: int,
     seed: int | None = None,
+    language: str = "default",
 ) -> list[str]:
     """
     Generate multiple names using the given pattern.
@@ -683,6 +289,8 @@ def generate_batch(
         seed:
             Optional seed for reproducibility. If provided, each name uses seed
             + i.
+        language:
+            The language token set to use ("default" or "elvish").
 
     Returns:
         list[str]:
@@ -695,5 +303,5 @@ def generate_batch(
     names = []
     for _ in range(count):
         # We already seeded the random generator above.
-        names.append(generate(pattern, None))
+        names.append(generate(pattern, None, language))
     return names

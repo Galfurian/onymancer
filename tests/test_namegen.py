@@ -1,7 +1,11 @@
 """Tests for name generator."""
 
 
-from onymancer import generate, generate_batch, load_tokens_from_json, set_token, set_tokens
+import json
+import tempfile
+import os
+
+from onymancer import generate, generate_batch, load_language_from_json, set_token, set_tokens
 
 
 def test_generate_simple() -> None:
@@ -52,12 +56,6 @@ def test_set_tokens() -> None:
     assert name2 == "world"
 
 
-def test_load_tokens_from_json_invalid() -> None:
-    """Test loading invalid JSON."""
-    result = load_tokens_from_json("nonexistent.json")
-    assert result is False
-
-
 def test_generate_reproducibility() -> None:
     """Test that same seed produces same result."""
     name1 = generate("s!v", seed=123)
@@ -102,3 +100,57 @@ def test_generate_batch_count_zero() -> None:
     """Test batch generation with count 0."""
     names = generate_batch("s", count=0, seed=42)
     assert names == []
+
+
+def test_generate_elvish() -> None:
+    """Test generation with Elvish language."""
+    name = generate("s!v!c", seed=42, language="elvish")
+    assert isinstance(name, str)
+    assert len(name) > 0
+    # Elvish names should contain more liquid consonants
+    assert any(char in name.lower() for char in "lr")
+
+
+def test_generate_elvish_batch() -> None:
+    """Test batch generation with Elvish language."""
+    names = generate_batch("s!v", count=3, seed=123, language="elvish")
+    assert len(names) == 3
+    for name in names:
+        assert isinstance(name, str)
+        assert len(name) > 0
+
+
+def test_generate_default_language() -> None:
+    """Test that default language works."""
+    name1 = generate("s", seed=42, language="default")
+    name2 = generate("s", seed=42)  # Should be same as default
+    assert name1 == name2
+
+
+def test_generate_unknown_language() -> None:
+    """Test generation with unknown language falls back to default."""
+    name = generate("s", seed=42, language="unknown")
+    assert isinstance(name, str)
+    assert len(name) > 0
+
+
+def test_load_language_from_json() -> None:
+    """Test loading a custom language from JSON."""
+    # Create a temporary JSON file
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump({"s": ["test"]}, f)
+        temp_file = f.name
+    
+    try:
+        success = load_language_from_json("test_lang", temp_file)
+        assert success
+        name = generate("s", seed=42, language="test_lang")
+        assert name == "test"
+    finally:
+        os.unlink(temp_file)
+
+
+def test_load_language_from_json_invalid() -> None:
+    """Test loading invalid JSON for language."""
+    result = load_language_from_json("test", "nonexistent.json")
+    assert result is False

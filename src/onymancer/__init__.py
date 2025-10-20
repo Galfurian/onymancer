@@ -3,7 +3,7 @@
 from .namegen import (
     generate,
     generate_batch,
-    load_tokens_from_json,
+    load_language_from_json,
     set_token,
     set_tokens,
 )
@@ -11,7 +11,7 @@ from .namegen import (
 __all__ = [
     "generate",
     "generate_batch",
-    "load_tokens_from_json",
+    "load_language_from_json",
     "set_token",
     "set_tokens",
 ]
