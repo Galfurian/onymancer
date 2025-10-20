@@ -9,7 +9,7 @@ import argparse
 import json
 import sys
 
-from onymancer import generate, load_tokens_from_json
+from onymancer import generate_batch, load_language_from_json
 
 # Predefined patterns with descriptions
 PREDEFINED_PATTERNS = {
@@ -67,7 +67,7 @@ def load_custom_tokens(filepath: str) -> bool:
 
     """
     try:
-        success = load_tokens_from_json(filepath)
+        success = load_language_from_json("custom", filepath)
         if success:
             print(f"✓ Loaded custom tokens from {filepath}")
         else:
@@ -78,24 +78,22 @@ def load_custom_tokens(filepath: str) -> bool:
         return False
 
 
-def generate_names(pattern: str, count: int, seed: int | None = None) -> list[str]:
+def generate_names(pattern: str, count: int, seed: int | None = None, language: str = "default", min_length: int | None = None, max_length: int | None = None) -> list[str]:
     """Generate multiple names using the given pattern.
 
     Args:
         pattern: The pattern to use
         count: Number of names to generate
         seed: Optional seed for reproducibility
+        language: Language token set to use
+        min_length: Minimum length constraint
+        max_length: Maximum length constraint
 
     Returns:
         List of generated names
 
     """
-    names = []
-    for i in range(count):
-        current_seed = seed + i if seed is not None else i
-        name = generate(pattern, current_seed)
-        names.append(name)
-    return names
+    return generate_batch(pattern, count, seed, language, min_length, max_length)
 
 
 def main() -> None:
@@ -107,6 +105,7 @@ def main() -> None:
 Examples:
   %(prog)s --pattern "!s!v!c" --count 5
   %(prog)s --preset fantasy --count 3 --seed 42
+  %(prog)s --preset elven --language elvish --count 5 --min-length 4 --max-length 8
   %(prog)s --list-patterns
   %(prog)s --custom-tokens my_tokens.json --pattern "!x!y"
 
@@ -154,6 +153,25 @@ Pattern Syntax:
     )
 
     parser.add_argument(
+        "--language",
+        default="default",
+        choices=["default", "elvish"],
+        help="Language token set to use (default: default)"
+    )
+
+    parser.add_argument(
+        "--min-length",
+        type=int,
+        help="Minimum length constraint for generated names"
+    )
+
+    parser.add_argument(
+        "--max-length",
+        type=int,
+        help="Maximum length constraint for generated names"
+    )
+
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Output results as JSON"
@@ -191,13 +209,16 @@ Pattern Syntax:
 
     # Generate names
     try:
-        names = generate_names(pattern, args.count, args.seed)
+        names = generate_names(pattern, args.count, args.seed, args.language, args.min_length, args.max_length)
 
         if args.json:
             result = {
                 "pattern": pattern,
                 "count": args.count,
                 "seed": args.seed,
+                "language": args.language,
+                "min_length": args.min_length,
+                "max_length": args.max_length,
                 "names": names
             }
             print(json.dumps(result, indent=2))
@@ -205,6 +226,15 @@ Pattern Syntax:
             print(f"Generated {args.count} name(s) using pattern: {pattern}")
             if args.seed is not None:
                 print(f"Seed: {args.seed}")
+            if args.language != "default":
+                print(f"Language: {args.language}")
+            if args.min_length is not None or args.max_length is not None:
+                length_info = []
+                if args.min_length is not None:
+                    length_info.append(f"min: {args.min_length}")
+                if args.max_length is not None:
+                    length_info.append(f"max: {args.max_length}")
+                print(f"Length constraints: {', '.join(length_info)}")
             print("\nNames:")
             for i, name in enumerate(names, 1):
                 print(f"{i:2d}. {name}")

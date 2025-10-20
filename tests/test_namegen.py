@@ -1,11 +1,16 @@
 """Tests for name generator."""
 
-
 import json
-import tempfile
 import os
+import tempfile
 
-from onymancer import generate, generate_batch, load_language_from_json, set_token, set_tokens
+from onymancer import (
+    generate,
+    generate_batch,
+    load_language_from_json,
+    set_token,
+    set_tokens,
+)
 
 
 def test_generate_simple() -> None:
@@ -102,6 +107,41 @@ def test_generate_batch_count_zero() -> None:
     assert names == []
 
 
+def test_generate_batch_min_length() -> None:
+    """Test batch generation with minimum length constraint."""
+    names = generate_batch("s", count=5, seed=42, min_length=3)
+    assert len(names) == 5
+    for name in names:
+        assert len(name) >= 3
+
+
+def test_generate_batch_max_length() -> None:
+    """Test batch generation with maximum length constraint."""
+    names = generate_batch("s!v!c", count=5, seed=42, max_length=5)
+    assert len(names) == 5
+    for name in names:
+        assert len(name) <= 5
+
+
+def test_generate_batch_length_range() -> None:
+    """Test batch generation with both min and max length constraints."""
+    names = generate_batch("s!v!c", count=5, seed=42, min_length=2, max_length=8)
+    assert len(names) == 5
+    for name in names:
+        assert 2 <= len(name) <= 8
+
+
+def test_generate_batch_impossible_constraints() -> None:
+    """Test batch generation with impossible length constraints."""
+    # Try to get 5 names with min_length=100 (very unlikely)
+    names = generate_batch("s", count=5, seed=42, min_length=100)
+    # Should return fewer than 5 names if constraints can't be met
+    assert len(names) <= 5
+    # But any names returned should meet the constraint
+    for name in names:
+        assert len(name) >= 100
+
+
 def test_generate_elvish() -> None:
     """Test generation with Elvish language."""
     name = generate("s!v!c", seed=42, language="elvish")
@@ -137,10 +177,10 @@ def test_generate_unknown_language() -> None:
 def test_load_language_from_json() -> None:
     """Test loading a custom language from JSON."""
     # Create a temporary JSON file
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
         json.dump({"s": ["test"]}, f)
         temp_file = f.name
-    
+
     try:
         success = load_language_from_json("test_lang", temp_file)
         assert success

@@ -1,8 +1,8 @@
 """Fantasy name generator module."""
 
-from dataclasses import dataclass, field
 import json
 import random
+from dataclasses import dataclass, field
 from pathlib import Path
 
 # Global token map
@@ -40,6 +40,7 @@ class _OptionT:
             The list of options in the current group.
         language (str):
             The language token set to use.
+
     """
 
     capitalize: bool = field(
@@ -277,6 +278,8 @@ def generate_batch(
     count: int,
     seed: int | None = None,
     language: str = "default",
+    min_length: int | None = None,
+    max_length: int | None = None,
 ) -> list[str]:
     """
     Generate multiple names using the given pattern.
@@ -291,17 +294,29 @@ def generate_batch(
             + i.
         language:
             The language token set to use ("default" or "elvish").
+        min_length:
+            Minimum length constraint for generated names. If None, no minimum.
+        max_length:
+            Maximum length constraint for generated names. If None, no maximum.
 
     Returns:
         list[str]:
-            List of generated names.
+            List of generated names that meet the length constraints.
 
     """
     # If a seed is provided, seed the random generator.
     if seed is not None:
         random.seed(seed)
     names = []
-    for _ in range(count):
+    attempts = 0
+    max_attempts = count * 10  # Prevent infinite loops
+    while len(names) < count and attempts < max_attempts:
         # We already seeded the random generator above.
-        names.append(generate(pattern, None, language))
+        name = generate(pattern, None, language)
+        # Check length constraints
+        name_len = len(name)
+        if (min_length is None or name_len >= min_length) and \
+           (max_length is None or name_len <= max_length):
+            names.append(name)
+        attempts += 1
     return names
