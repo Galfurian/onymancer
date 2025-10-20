@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-10-20
+
+### Added
+
+- Pronounceability scoring algorithm and API (`score_pronounceability`,
+  `is_pronounceable`) for quality filtering in `generate_batch()` (9caab39)
+- Dwarvish language token set with authentic guttural syllables (14a01a1)
+- `--min-pronounceability` CLI option and integration with `generate_batch()` (9caab39)
+- Expanded elven name patterns with 12 diverse melodic combinations (47e0d52)
+- Character restrictions (`starts_with`, `ends_with`, `contains`) to `generate_batch()` (7f124e8)
+- Length constraints (`min_length`, `max_length`) to `generate_batch()` (b925230)
+- Language support to CLI presets (8c228fd)
+
+### Changed
+
+- Refactored constraint checking to a fail-early pattern for clarity and
+  maintainability (b5be6df)
+
+### Fixed
+
+- Updated tests and docs to cover pronounceability scoring and dwarvish
+  language support
+
 ## [0.2.0] - 2025-10-20
 
 ### Added
