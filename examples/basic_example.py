@@ -33,6 +33,12 @@ def main() -> None:
     constrained_names = generate_batch("!s!v!c", count=3, seed=123, min_length=4, max_length=8)
     print(f"Constrained names (4-8 chars): {constrained_names}")
 
+    # Generate names with character constraints
+    # Note: constraints may not always be satisfiable depending on pattern and tokens
+    char_constrained = generate_batch("A!s!v", count=3, seed=456, 
+                                     starts_with="A", contains="a")
+    print(f"Character constrained names: {char_constrained}")
+
     # Set custom token
     set_token("x", ["dragon", "phoenix", "griffin"])
     name4 = generate("!x", seed=101)

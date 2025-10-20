@@ -78,7 +78,7 @@ def load_custom_tokens(filepath: str) -> bool:
         return False
 
 
-def generate_names(pattern: str, count: int, seed: int | None = None, language: str = "default", min_length: int | None = None, max_length: int | None = None) -> list[str]:
+def generate_names(pattern: str, count: int, seed: int | None = None, language: str = "default", min_length: int | None = None, max_length: int | None = None, starts_with: str | None = None, ends_with: str | None = None, contains: str | None = None) -> list[str]:
     """Generate multiple names using the given pattern.
 
     Args:
@@ -88,12 +88,15 @@ def generate_names(pattern: str, count: int, seed: int | None = None, language: 
         language: Language token set to use
         min_length: Minimum length constraint
         max_length: Maximum length constraint
+        starts_with: String names must start with
+        ends_with: String names must end with
+        contains: String names must contain
 
     Returns:
         List of generated names
 
     """
-    return generate_batch(pattern, count, seed, language, min_length, max_length)
+    return generate_batch(pattern, count, seed, language, min_length, max_length, starts_with, ends_with, contains)
 
 
 def main() -> None:
@@ -106,6 +109,7 @@ Examples:
   %(prog)s --pattern "!s!v!c" --count 5
   %(prog)s --preset fantasy --count 3 --seed 42
   %(prog)s --preset elven --language elvish --count 5 --min-length 4 --max-length 8
+  %(prog)s --pattern "!s!v!c" --count 3 --starts-with "A" --ends-with "n" --contains "e"
   %(prog)s --list-patterns
   %(prog)s --custom-tokens my_tokens.json --pattern "!x!y"
 
@@ -172,6 +176,21 @@ Pattern Syntax:
     )
 
     parser.add_argument(
+        "--starts-with",
+        help="String that generated names must start with"
+    )
+
+    parser.add_argument(
+        "--ends-with",
+        help="String that generated names must end with"
+    )
+
+    parser.add_argument(
+        "--contains",
+        help="String that generated names must contain"
+    )
+
+    parser.add_argument(
         "--json",
         action="store_true",
         help="Output results as JSON"
@@ -209,7 +228,7 @@ Pattern Syntax:
 
     # Generate names
     try:
-        names = generate_names(pattern, args.count, args.seed, args.language, args.min_length, args.max_length)
+        names = generate_names(pattern, args.count, args.seed, args.language, args.min_length, args.max_length, args.starts_with, args.ends_with, args.contains)
 
         if args.json:
             result = {
@@ -219,6 +238,9 @@ Pattern Syntax:
                 "language": args.language,
                 "min_length": args.min_length,
                 "max_length": args.max_length,
+                "starts_with": args.starts_with,
+                "ends_with": args.ends_with,
+                "contains": args.contains,
                 "names": names
             }
             print(json.dumps(result, indent=2))
@@ -235,6 +257,15 @@ Pattern Syntax:
                 if args.max_length is not None:
                     length_info.append(f"max: {args.max_length}")
                 print(f"Length constraints: {', '.join(length_info)}")
+            if args.starts_with is not None or args.ends_with is not None or args.contains is not None:
+                char_info = []
+                if args.starts_with is not None:
+                    char_info.append(f"starts with: '{args.starts_with}'")
+                if args.ends_with is not None:
+                    char_info.append(f"ends with: '{args.ends_with}'")
+                if args.contains is not None:
+                    char_info.append(f"contains: '{args.contains}'")
+                print(f"Character constraints: {', '.join(char_info)}")
             print("\nNames:")
             for i, name in enumerate(names, 1):
                 print(f"{i:2d}. {name}")

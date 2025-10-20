@@ -280,6 +280,9 @@ def generate_batch(
     language: str = "default",
     min_length: int | None = None,
     max_length: int | None = None,
+    starts_with: str | None = None,
+    ends_with: str | None = None,
+    contains: str | None = None,
 ) -> list[str]:
     """
     Generate multiple names using the given pattern.
@@ -298,11 +301,24 @@ def generate_batch(
             Minimum length constraint for generated names. If None, no minimum.
         max_length:
             Maximum length constraint for generated names. If None, no maximum.
+        starts_with:
+            String that generated names must start with. If None, no restriction.
+        ends_with:
+            String that generated names must end with. If None, no restriction.
+        contains:
+            String that generated names must contain. If None, no restriction.
 
     Returns:
         list[str]:
-            List of generated names that meet the length constraints.
+            List of generated names that meet all specified constraints.
+            May return fewer than 'count' names if constraints cannot be satisfied
+            within reasonable attempts (to prevent infinite loops).
 
+    Note:
+        If character constraints are incompatible with the pattern or token set,
+        the function may return fewer names than requested or an empty list.
+        For example, requiring names to start with 'X' when the pattern generates
+        names starting with syllables that never begin with 'X'.
     """
     # If a seed is provided, seed the random generator.
     if seed is not None:
@@ -313,10 +329,24 @@ def generate_batch(
     while len(names) < count and attempts < max_attempts:
         # We already seeded the random generator above.
         name = generate(pattern, None, language)
-        # Check length constraints
+        # Check all constraints
         name_len = len(name)
-        if (min_length is None or name_len >= min_length) and \
-           (max_length is None or name_len <= max_length):
+        meets_constraints = True
+        
+        # Length constraints
+        if (min_length is not None and name_len < min_length) or \
+           (max_length is not None and name_len > max_length):
+            meets_constraints = False
+        
+        # Character constraints
+        if meets_constraints and starts_with is not None and not name.startswith(starts_with):
+            meets_constraints = False
+        if meets_constraints and ends_with is not None and not name.endswith(ends_with):
+            meets_constraints = False
+        if meets_constraints and contains is not None and contains not in name:
+            meets_constraints = False
+        
+        if meets_constraints:
             names.append(name)
         attempts += 1
     return names

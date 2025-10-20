@@ -142,6 +142,69 @@ def test_generate_batch_impossible_constraints() -> None:
         assert len(name) >= 100
 
 
+def test_generate_batch_starts_with() -> None:
+    """Test batch generation with starts_with constraint."""
+    # Use a more common starting letter that should appear in syllables
+    names = generate_batch("s!v!c", count=5, seed=42, starts_with="A")
+    # May not get exactly 5 names if constraint is restrictive
+    assert len(names) <= 5
+    for name in names:
+        assert name.startswith("A")
+
+
+def test_generate_batch_ends_with() -> None:
+    """Test batch generation with ends_with constraint."""
+    # Use a common ending consonant
+    names = generate_batch("s!v!c", count=5, seed=42, ends_with="n")
+    assert len(names) <= 5
+    for name in names:
+        assert name.endswith("n")
+
+
+def test_generate_batch_contains() -> None:
+    """Test batch generation with contains constraint."""
+    # Use a common vowel
+    names = generate_batch("s!v!c", count=5, seed=42, contains="a")
+    assert len(names) <= 5
+    for name in names:
+        assert "a" in name.lower()
+
+
+def test_generate_batch_multiple_constraints() -> None:
+    """Test batch generation with multiple character constraints."""
+    # Use constraints that might be possible together
+    names = generate_batch("s!v!c", count=5, seed=42, 
+                          starts_with="A", ends_with="n", contains="e")
+    assert len(names) <= 5
+    for name in names:
+        assert name.startswith("A")
+        assert name.endswith("n")
+        assert "e" in name.lower()
+
+
+def test_generate_batch_combined_constraints() -> None:
+    """Test batch generation with both length and character constraints."""
+    names = generate_batch("s!v!c", count=5, seed=42,
+                          min_length=4, max_length=8,
+                          starts_with="A", contains="a")
+    assert len(names) <= 5
+    for name in names:
+        assert 4 <= len(name) <= 8
+        assert name.startswith("A")
+        assert "a" in name.lower()
+
+
+def test_generate_batch_impossible_character_constraints() -> None:
+    """Test batch generation with impossible character constraints."""
+    # Try to get names starting with 'X' - very unlikely with current tokens
+    names = generate_batch("s!v!c", count=5, seed=42, starts_with="X")
+    # Should return fewer than 5 names or empty list if impossible
+    assert len(names) <= 5
+    # But any names returned should meet the constraint
+    for name in names:
+        assert name.startswith("X")
+
+
 def test_generate_elvish() -> None:
     """Test generation with Elvish language."""
     name = generate("s!v!c", seed=42, language="elvish")
