@@ -6,7 +6,6 @@ Use --help to see all available options.
 """
 
 import argparse
-import json
 import sys
 
 from onymancer import generate_batch, load_language_from_json
@@ -15,44 +14,52 @@ from onymancer import generate_batch, load_language_from_json
 PREDEFINED_PATTERNS = {
     "simple": {
         "pattern": "s(dim)",
+        "language": "default",
         "description": "Simple name with literal suffix",
-        "example": "thor(dim)"
+        "example": "thor(dim)",
     },
     "fantasy": {
         "pattern": "!s!v!c",
+        "language": "default",
         "description": "Classic fantasy name with capitalization",
-        "example": "Elira"
+        "example": "Elira",
     },
     "elven": {
         "pattern": "!s<v|l>!c!v",
+        "language": "elvish",
         "description": "Elven-style name with liquid consonants",
-        "example": "Lirael"
+        "example": "Lirael",
     },
     "dwarven": {
         "pattern": "!s!c!c<v|>",
+        "language": "default",
         "description": "Dwarven name with hard consonants",
-        "example": "Thrain"
+        "example": "Thrain",
     },
     "title": {
         "pattern": "!t !T",
+        "language": "default",
         "description": "Random title",
-        "example": "Master of The Mountains"
+        "example": "Master of The Mountains",
     },
     "place": {
         "pattern": "!s<v|c><ford|ham|ton|ville|burg>",
+        "language": "default",
         "description": "Place name",
-        "example": "Riverton"
+        "example": "Riverton",
     },
     "insult": {
         "pattern": "!i !s",
+        "language": "default",
         "description": "Humorous insult",
-        "example": "Bigheaded Thor"
+        "example": "Bigheaded Thor",
     },
     "mushy": {
         "pattern": "!m !M",
+        "language": "default",
         "description": "Affectionate term",
-        "example": "Sweetie Pie"
-    }
+        "example": "Sweetie Pie",
+    },
 }
 
 
@@ -78,25 +85,15 @@ def load_custom_tokens(filepath: str) -> bool:
         return False
 
 
-def generate_names(pattern: str, count: int, seed: int | None = None, language: str = "default", min_length: int | None = None, max_length: int | None = None, starts_with: str | None = None, ends_with: str | None = None, contains: str | None = None) -> list[str]:
-    """Generate multiple names using the given pattern.
-
-    Args:
-        pattern: The pattern to use
-        count: Number of names to generate
-        seed: Optional seed for reproducibility
-        language: Language token set to use
-        min_length: Minimum length constraint
-        max_length: Maximum length constraint
-        starts_with: String names must start with
-        ends_with: String names must end with
-        contains: String names must contain
-
-    Returns:
-        List of generated names
-
+def print_patterns() -> None:
     """
-    return generate_batch(pattern, count, seed, language, min_length, max_length, starts_with, ends_with, contains)
+    Print all available predefined patterns.
+    """
+    print("Available predefined patterns:")
+    print("-" * 50)
+    for name, info in PREDEFINED_PATTERNS.items():
+        print(f"{name:<15} {info['description']} (e.g., {info['example']})")
+    print("\nUse --preset <name> to use a predefined pattern")
 
 
 def main() -> None:
@@ -111,89 +108,79 @@ Examples:
   %(prog)s --preset elven --language elvish --count 5 --min-length 4 --max-length 8
   %(prog)s --pattern "!s!v!c" --count 3 --starts-with "A" --ends-with "n" --contains "e"
   %(prog)s --list-patterns
-  %(prog)s --custom-tokens my_tokens.json --pattern "!x!y"
 
 Pattern Syntax:
   s: syllable    v: vowel    V: vowel combo    c: consonant
   B: begin cons  C: any cons i: insult         m: mushy name
   M: mushy end   D: dumb cons d: dumb syllable t: title begin
   T: title end   !: capitalize  (): literals   <>: groups
-        """
+        """,
     )
 
     parser.add_argument(
-        "-p", "--pattern",
-        help="Pattern to use for name generation"
+        "-p",
+        "--pattern",
+        help="Pattern to use for name generation",
     )
 
     parser.add_argument(
         "--preset",
         choices=list(PREDEFINED_PATTERNS.keys()),
-        help="Use a predefined pattern"
+        help="Use a predefined pattern",
     )
 
     parser.add_argument(
-        "-c", "--count",
+        "-c",
+        "--count",
         type=int,
         default=1,
-        help="Number of names to generate (default: 1)"
+        help="Number of names to generate (default: 1)",
     )
-
     parser.add_argument(
-        "-s", "--seed",
+        "-s",
+        "--seed",
         type=int,
-        help="Seed for reproducible generation"
+        default=42,
+        help="Seed for reproducible generation",
     )
-
     parser.add_argument(
-        "-l", "--list-patterns",
+        "-l",
+        "--list-patterns",
         action="store_true",
-        help="List available predefined patterns"
+        help="List available predefined patterns",
     )
-
     parser.add_argument(
-        "-t", "--custom-tokens",
-        help="Load custom tokens from JSON file"
+        "-t",
+        "--custom-tokens",
+        help="Load custom tokens from JSON file",
     )
-
     parser.add_argument(
         "--language",
         default="default",
         choices=["default", "elvish"],
-        help="Language token set to use (default: default)"
+        help="Language token set to use (default: auto for presets, 'default' for custom patterns)",
     )
-
     parser.add_argument(
         "--min-length",
         type=int,
-        help="Minimum length constraint for generated names"
+        help="Minimum length constraint for generated names",
     )
-
     parser.add_argument(
         "--max-length",
         type=int,
-        help="Maximum length constraint for generated names"
+        help="Maximum length constraint for generated names",
     )
-
     parser.add_argument(
         "--starts-with",
-        help="String that generated names must start with"
+        help="String that generated names must start with",
     )
-
     parser.add_argument(
         "--ends-with",
-        help="String that generated names must end with"
+        help="String that generated names must end with",
     )
-
     parser.add_argument(
         "--contains",
-        help="String that generated names must contain"
-    )
-
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON"
+        help="String that generated names must contain",
     )
 
     args = parser.parse_args()
@@ -205,70 +192,50 @@ Pattern Syntax:
 
     # List patterns if requested
     if args.list_patterns:
-        print("Available predefined patterns:")
-        print("-" * 50)
-        for name, info in PREDEFINED_PATTERNS.items():
-            print(f"{name:<15} {info['description']} (e.g., {info['example']})")
-        print("\nUse --preset <name> to use a predefined pattern")
+        print_patterns()
         return
 
-    # Determine pattern to use
+    if args.language not in ["default", "elvish"]:
+        print(f"✗ Unknown language: {args.language}")
+        sys.exit(1)
+
+    # Determine pattern and language to use
     if args.preset and args.pattern:
         print("✗ Cannot use both --preset and --pattern")
         sys.exit(1)
-    elif args.preset:
-        pattern = PREDEFINED_PATTERNS[args.preset]["pattern"]
-        print(f"Using preset '{args.preset}': {pattern}")
-    elif args.pattern:
-        pattern = args.pattern
-    else:
+
+    if not args.preset and not args.pattern:
         print("✗ Must specify either --pattern or --preset")
         print("Use --list-patterns to see available presets")
         sys.exit(1)
 
+    if args.preset:
+        args.pattern = PREDEFINED_PATTERNS[args.preset]["pattern"]
+        args.language = PREDEFINED_PATTERNS[args.preset]["language"]
+
     # Generate names
     try:
-        names = generate_names(pattern, args.count, args.seed, args.language, args.min_length, args.max_length, args.starts_with, args.ends_with, args.contains)
+        names = generate_batch(
+            args.pattern,
+            args.count,
+            args.seed,
+            args.language,
+            args.min_length,
+            args.max_length,
+            args.starts_with,
+            args.ends_with,
+            args.contains,
+        )
 
-        if args.json:
-            result = {
-                "pattern": pattern,
-                "count": args.count,
-                "seed": args.seed,
-                "language": args.language,
-                "min_length": args.min_length,
-                "max_length": args.max_length,
-                "starts_with": args.starts_with,
-                "ends_with": args.ends_with,
-                "contains": args.contains,
-                "names": names
-            }
-            print(json.dumps(result, indent=2))
-        else:
-            print(f"Generated {args.count} name(s) using pattern: {pattern}")
-            if args.seed is not None:
-                print(f"Seed: {args.seed}")
-            if args.language != "default":
-                print(f"Language: {args.language}")
-            if args.min_length is not None or args.max_length is not None:
-                length_info = []
-                if args.min_length is not None:
-                    length_info.append(f"min: {args.min_length}")
-                if args.max_length is not None:
-                    length_info.append(f"max: {args.max_length}")
-                print(f"Length constraints: {', '.join(length_info)}")
-            if args.starts_with is not None or args.ends_with is not None or args.contains is not None:
-                char_info = []
-                if args.starts_with is not None:
-                    char_info.append(f"starts with: '{args.starts_with}'")
-                if args.ends_with is not None:
-                    char_info.append(f"ends with: '{args.ends_with}'")
-                if args.contains is not None:
-                    char_info.append(f"contains: '{args.contains}'")
-                print(f"Character constraints: {', '.join(char_info)}")
-            print("\nNames:")
-            for i, name in enumerate(names, 1):
-                print(f"{i:2d}. {name}")
+        print(
+            f"Generated {args.count} name(s) "
+            f"using pattern '{args.pattern}', language '{args.language}', "
+            f"and seed '{args.seed}'."
+        )
+
+        print("\nNames:")
+        for i, name in enumerate(names, 1):
+            print(f"{i:2d}. {name}")
 
     except Exception as e:
         print(f"✗ Error generating names: {e}")

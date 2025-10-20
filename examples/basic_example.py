@@ -26,35 +26,38 @@ def main() -> None:
     print(f"Title: {title}")
 
     # Generate multiple names with batch generation
-    names = generate_batch("!s!v", count=3, seed=42)
+    names = generate_batch(
+        "!s!v",
+        count=3,
+        seed=42,
+    )
     print(f"Batch of names: {names}")
 
     # Generate names with length constraints
-    constrained_names = generate_batch("!s!v!c", count=3, seed=123, min_length=4, max_length=8)
+    constrained_names = generate_batch(
+        "!s!v!c",
+        count=3,
+        seed=123,
+        min_length=4,
+        max_length=8,
+    )
     print(f"Constrained names (4-8 chars): {constrained_names}")
 
-    # Generate names with character constraints
-    # Note: constraints may not always be satisfiable depending on pattern and tokens
-    char_constrained = generate_batch("A!s!v", count=3, seed=456, 
-                                     starts_with="A", contains="a")
+    # Generate names with character constraints. Note: constraints may not
+    # always be satisfiable depending on pattern and tokens.
+    char_constrained = generate_batch(
+        "A!s!v",
+        count=3,
+        seed=456,
+        starts_with="A",
+        contains="a",
+    )
     print(f"Character constrained names: {char_constrained}")
 
     # Set custom token
     set_token("x", ["dragon", "phoenix", "griffin"])
     name4 = generate("!x", seed=101)
     print(f"Custom token name: {name4}")
-
-    # You can also load custom language tokens from JSON
-    # from pathlib import Path
-    # from onymancer import load_language_from_json
-    # tokens_file = Path("custom_tokens.json")
-    # if tokens_file.exists():
-    #     if load_language_from_json("custom", str(tokens_file)):
-    #         print("Loaded custom language tokens from JSON")
-    #         name5 = generate("!s!v!c", seed=202, language="custom")
-    #         print(f"Name with custom tokens: {name5}")
-    #     else:
-    #         print("Failed to load language tokens from JSON")
 
     print("\nName generation complete!")
 
